@@ -4,16 +4,34 @@ A beautiful and modern web application for chatting with Ollama AI models. This 
 
 ## Features
 
+### Core Features
 - 🌐 **Dual Mode Support** - Switch between Local Hosting and Cloud Service
 - 🔑 **API Key Authentication** - Secure connection to Ollama cloud service
 - 🖥️ **Local LLM Hosting** - Connect to your local Ollama instance
 - ☁️ **Cloud Service Integration** - Use Ollama's cloud service with API key
 - 🤖 **Multiple Model Support** - Select from any available model on your Ollama instance
 - 💬 **Real-time Streaming** - See responses as they're generated
-- 🎨 **Modern UI** - Beautiful, responsive design that works on desktop and mobile
-- 📝 **Conversation History** - Maintains context throughout your chat session
-- 🔄 **Easy Model Switching** - Change models mid-conversation
-- ✨ **Smooth Animations** - Polished user experience with typing indicators
+
+### Enhanced UI Features ✨ NEW!
+- 🎨 **Modern Enhanced Interface** - Beautiful, polished design with smooth animations
+- 🌓 **Dark Mode Toggle** - Switch between light and dark themes
+- 📝 **Markdown Rendering** - Full markdown support with syntax highlighting
+- 📋 **Copy Messages** - One-click copy for any message
+- 💾 **Export Conversations** - Export as Text, Markdown, or JSON
+- 🔔 **Toast Notifications** - Non-intrusive status updates
+- ⌨️ **Keyboard Shortcuts** - Power user shortcuts for common actions
+- 🟢 **Connection Status** - Live connection indicator in header
+- 📊 **Model Information** - See current model at a glance
+- 💡 **LocalStorage** - Saves your theme and mode preferences
+- 📱 **Fully Responsive** - Perfect on desktop, tablet, and mobile
+
+## 📚 Documentation
+
+**New here?** Start with [START_HERE.md](START_HERE.md)!
+
+Complete documentation index: [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
+
+---
 
 ## Prerequisites
 
@@ -79,8 +97,11 @@ python3 app.py
 
 2. Open your web browser and navigate to:
 ```
-http://localhost:5000
+http://localhost:5000              # Enhanced UI (default)
+http://localhost:5000/classic      # Classic UI
 ```
+
+**We recommend the enhanced version for the best experience!**
 
 3. Configure your Ollama connection:
    
@@ -168,17 +189,30 @@ This test script will:
 .
 ├── app.py                      # Flask backend with API endpoints
 ├── templates/
-│   └── index.html             # Frontend HTML/CSS/JavaScript
+│   ├── index.html             # Classic UI
+│   └── index_enhanced.html    # Enhanced UI (default) ✨
 ├── requirements.txt           # Python dependencies
 ├── test_ollama_cloud.py       # Test script for cloud connection
+│
 ├── start.bat                  # Windows launcher (local mode)
 ├── start.sh                   # Linux/Mac launcher (local mode)
 ├── start_with_cloud.bat       # Windows launcher (cloud mode)
 ├── start_with_cloud.sh        # Linux/Mac launcher (cloud mode)
 ├── set_api_key.bat            # Windows API key setup
 ├── set_api_key.sh             # Linux/Mac API key setup
+│
 ├── README.md                  # This file
-└── QUICK_START.md             # Quick reference guide
+├── DOCUMENTATION_INDEX.md     # Complete docs index ✨
+├── START_HERE.md              # Quick start guide
+├── QUICK_START.md             # Quick reference
+├── USAGE_GUIDE.md             # Detailed usage instructions
+├── WHATS_NEW.md               # What's new in v2.0 ✨
+├── ENHANCEMENT_SUMMARY.md     # Enhancement overview ✨
+├── ENHANCEMENT_FEATURES.md    # Feature details ✨
+├── UI_COMPARISON.md           # Classic vs Enhanced ✨
+├── KEYBOARD_SHORTCUTS.md      # Shortcuts reference ✨
+├── CHANGES_SUMMARY.md         # Implementation notes
+└── .gitignore                 # Git ignore rules
 ```
 
 ## API Endpoints
