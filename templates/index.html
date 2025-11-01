@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .mode-btn.active:hover {
+            background: white;
+        }
+
+        .config-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-group select {
+            cursor: pointer;
+        }
+
+        .input-group select option {
+            background: #667eea;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .message-content {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            min-width: 100px;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .clear-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .config-section {
+                flex-direction: column;
+            }
+
+            .input-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Ollama Chat</h1>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="localModeBtn" onclick="switchMode('local')">🖥️ Local Hosting</button>
+                <button class="mode-btn" id="cloudModeBtn" onclick="switchMode('cloud')">☁️ Cloud Service</button>
+            </div>
+            <div class="config-section">
+                <div class="input-group">
+                    <label for="ollamaUrl">Ollama URL</label>
+                    <input type="text" id="ollamaUrl" placeholder="http://localhost:11434" value="http://localhost:11434">
+                </div>
+                <div class="input-group" id="apiKeyGroup" style="display: none;">
+                    <label for="apiKey">API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter your API key">
+                </div>
+                <div class="input-group">
+                    <label for="modelSelect">Model</label>
+                    <select id="modelSelect">
+                        <option value="">Select a model...</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="loadModels()">Load Models</button>
+                <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="status-message">
+                👋 Welcome! Choose Local Hosting or Cloud Service, then load models to get started.
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea 
+                id="messageInput" 
+                placeholder="Type your message here..." 
+                rows="1"
+                onkeydown="handleKeyPress(event)"
+            ></textarea>
+            <button class="btn-send" onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let conversationHistory = [];
+        let isProcessing = false;
+        let currentOllamaUrl = '';
+        let currentModel = '';
+        let currentMode = 'local';
+        let currentApiKey = '';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const localBtn = document.getElementById('localModeBtn');
+            const cloudBtn = document.getElementById('cloudModeBtn');
+            const apiKeyGroup = document.getElementById('apiKeyGroup');
+            const ollamaUrlInput = document.getElementById('ollamaUrl');
+            const apiKeyInput = document.getElementById('apiKey');
+
+            if (mode === 'local') {
+                localBtn.classList.add('active');
+                cloudBtn.classList.remove('active');
+                apiKeyGroup.style.display = 'none';
+                ollamaUrlInput.value = 'http://localhost:11434';
+                ollamaUrlInput.placeholder = 'http://localhost:11434';
+            } else {
+                cloudBtn.classList.add('active');
+                localBtn.classList.remove('active');
+                apiKeyGroup.style.display = 'block';
+                ollamaUrlInput.value = 'https://ollama.com';
+                ollamaUrlInput.placeholder = 'https://ollama.com';
+                // Pre-fill API key if user provided one
+                if (!apiKeyInput.value) {
+                    apiKeyInput.value = 'b9e0d00cbcbb47adb23ae389076c7d2e.met23afbTcatGW29LdbgXSqV';
+                }
+            }
+
+            // Clear model selection when switching modes
+            document.getElementById('modelSelect').innerHTML = '<option value="">Select a model...</option>';
+        }
+
+        async function loadModels() {
+            const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const modelSelect = document.getElementById('modelSelect');
+            
+            if (!ollamaUrl) {
+                alert('Please enter an Ollama URL');
+                return;
+            }
+
+            if (currentMode === 'cloud' && !apiKey) {
+                alert('Please enter an API key for cloud service');
+                return;
+            }
+
+            try {
+                const requestBody = { ollama_url: ollamaUrl };
+                if (currentMode === 'cloud' && apiKey) {
+                    requestBody.api_key = apiKey;
+                    currentApiKey = apiKey;
+                }
+
+                const response = await fetch('/api/models', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    modelSelect.innerHTML = '<option value="">Select a model...</option>';
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelect.appendChild(option);
+                    });
+
+                    if (data.models.length === 0) {
+                        alert('No models found on this Ollama instance');
+                    } else {
+                        currentOllamaUrl = ollamaUrl;
+                        showStatusMessage(`✅ Loaded ${data.models.length} model(s)`);
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to load models: ' + error.message);
+            }
+        }
+
+        function showStatusMessage(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = message;
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(statusDiv);
+        }
+
+        function clearChat() {
+            conversationHistory = [];
+            showStatusMessage('💬 Chat cleared. Start a new conversation!');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            if (isProcessing) return;
+
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            const modelSelect = document.getElementById('modelSelect');
+            const model = modelSelect.value;
+
+            if (!message) return;
+
+            if (!currentOllamaUrl) {
+                alert('Please load models first');
+                return;
+            }
+
+            if (!model) {
+                alert('Please select a model');
+                return;
+            }
+
+            currentModel = model;
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            // Clear input
+            messageInput.value = '';
+
+            // Add user message to conversation
+            conversationHistory.push({
+                role: 'user',
+                content: message
+            });
+
+            // Display user message
+            displayMessage('user', message);
+
+            // Show typing indicator
+            const typingDiv = showTypingIndicator();
+
+            try {
+                const requestBody = {
+                    ollama_url: currentOllamaUrl,
+                    model: currentModel,
+                    messages: conversationHistory
+                };
+
+                if (currentMode === 'cloud' && currentApiKey) {
+                    requestBody.api_key = currentApiKey;
+                }
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                // Remove typing indicator
+                typingDiv.remove();
+
+                // Create assistant message container
+                const assistantMessageDiv = createMessageDiv('assistant');
+                let fullResponse = '';
+
+                // Read the stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.substring(6);
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                
+                                if (data.error) {
+                                    throw new Error(data.error);
+                                }
+
+                                if (data.message && data.message.content) {
+                                    fullResponse += data.message.content;
+                                    updateMessageContent(assistantMessageDiv, fullResponse);
+                                }
+                            } catch (e) {
+                                if (e.message.includes('Ollama') || e.message.includes('request')) {
+                                    throw e;
+                                }
+                                // Ignore JSON parse errors for incomplete chunks
+                            }
+                        }
+                    }
+                }
+
+                // Add assistant response to conversation history
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: fullResponse
+                });
+
+            } catch (error) {
+                typingDiv.remove();
+                displayError('Failed to get response: ' + error.message);
+            } finally {
+                isProcessing = false;
+                document.getElementById('sendBtn').disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function displayMessage(role, content) {
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // Remove status message if it exists
+            const statusMsg = chatContainer.querySelector('.status-message');
+            if (statusMsg) {
+                statusMsg.remove();
+            }
+
+            const messageDiv = createMessageDiv(role);
+            updateMessageContent(messageDiv, content);
+        }
+
+        function createMessageDiv(role) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'U' : 'AI';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function updateMessageContent(messageDiv, content) {
+            const contentDiv = messageDiv.querySelector('.message-content');
+            contentDiv.textContent = content;
+
+            // Scroll to bottom
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'AI';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            
+            contentDiv.appendChild(typingIndicator);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function displayError(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            chatContainer.appendChild(errorDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
