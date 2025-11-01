@@ -1,8 +1,12 @@
 # 🚀 START HERE - Quick Setup Guide
 
-## ✅ All Changes Implemented Successfully!
+## ✨ NEW: Enhanced UI Available!
 
-Your Ollama web application now supports both **Local Hosting** and **Cloud Service** with proper API key authentication.
+Your Ollama web application now features:
+- ✅ **Local Hosting** and **Cloud Service** support
+- ✅ **Enhanced UI** with dark mode, markdown, and more!
+- ✅ Proper API key authentication
+- ✅ Export, copy, and keyboard shortcuts
 
 ---
 
@@ -50,7 +54,9 @@ chmod +x start_with_cloud.sh
 ./start_with_cloud.sh
 ```
 
-Then open: **http://localhost:5000**
+Then open: **http://localhost:5000** (Enhanced UI)
+
+Or: **http://localhost:5000/classic** (Classic UI)
 
 #### Option C: Start Web App for Local Use
 
@@ -63,7 +69,24 @@ chmod +x start.sh
 ./start.sh
 ```
 
-Then open: **http://localhost:5000**
+Then open: **http://localhost:5000** (Enhanced UI - Recommended!)
+
+---
+
+## ✨ What's New in Enhanced UI?
+
+The enhanced version includes awesome new features:
+
+- 🌓 **Dark Mode** - Toggle with the moon icon or `Ctrl+D`
+- 📝 **Markdown Rendering** - AI responses with formatting and code highlighting
+- 📋 **Copy Button** - Copy any message with one click
+- 💾 **Export** - Save conversations as Text, Markdown, or JSON
+- 🟢 **Status Indicator** - See connection status at a glance
+- ⌨️ **Keyboard Shortcuts** - Fast navigation (press keyboard icon to see all)
+- 🔔 **Toast Notifications** - Clean, non-intrusive alerts
+- 💡 **Settings Persistence** - Your theme and mode are remembered
+
+**Try it:** http://localhost:5000
 
 ---
 
