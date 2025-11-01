@@ -11,7 +11,12 @@ OLLAMA_API_KEY = os.environ.get('OLLAMA_API_KEY', '')
 
 @app.route('/')
 def index():
-    """Serve the main chat interface"""
+    """Serve the enhanced chat interface"""
+    return render_template('index_enhanced.html')
+
+@app.route('/classic')
+def classic():
+    """Serve the classic chat interface"""
     return render_template('index.html')
 
 @app.route('/api/models', methods=['POST'])
