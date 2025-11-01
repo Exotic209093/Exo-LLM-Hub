@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat - Enhanced</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--error-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success-color);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--primary-color);
+            border-color: white;
+        }
+
+        .config-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-group select {
+            cursor: pointer;
+        }
+
+        .input-group select option {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+            background: var(--bg-secondary);
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 5px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            animation: fadeIn 0.3s;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .message-content {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+        }
+
+        .message-content pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message-content code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .input-container {
+            padding: 20px 40px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 15px 30px;
+            min-width: 100px;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid var(--error-color);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .model-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin-left: 10px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .config-section {
+                flex-direction: column;
+            }
+
+            .input-group {
+                width: 100%;
+            }
+
+            .header {
+                padding: 12px 20px;
+            }
+
+            .chat-container {
+                padding: 20px 15px;
+            }
+
+            .input-container {
+                padding: 15px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .status-indicator {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <h1>
+                    🤖 Ollama Chat
+                    <span class="status-indicator" id="statusIndicator">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Disconnected</span>
+                    </span>
+                    <span class="model-info" id="modelInfo" style="display: none;">
+                        📊 <span id="currentModelName"></span>
+                    </span>
+                </h1>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Toggle dark mode">🌓</button>
+                    <button class="icon-btn" onclick="showExportModal()" title="Export conversation">💾</button>
+                    <button class="icon-btn" onclick="showShortcuts()" title="Keyboard shortcuts">⌨️</button>
+                </div>
+            </div>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="localModeBtn" onclick="switchMode('local')">🖥️ Local Hosting</button>
+                <button class="mode-btn" id="cloudModeBtn" onclick="switchMode('cloud')">☁️ Cloud Service</button>
+            </div>
+            <div class="config-section">
+                <div class="input-group">
+                    <label for="ollamaUrl">Ollama URL</label>
+                    <input type="text" id="ollamaUrl" placeholder="http://localhost:11434" value="http://localhost:11434">
+                </div>
+                <div class="input-group" id="apiKeyGroup" style="display: none;">
+                    <label for="apiKey">API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter your API key">
+                </div>
+                <div class="input-group">
+                    <label for="modelSelect">Model</label>
+                    <select id="modelSelect">
+                        <option value="">Select a model...</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="loadModels()">Load Models</button>
+                <button class="btn-primary" onclick="clearChat()">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="status-message">
+                👋 Welcome! Choose Local Hosting or Cloud Service, then load models to get started.
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea 
+                id="messageInput" 
+                placeholder="Type your message here... (Shift+Enter for new line, Enter to send)" 
+                rows="1"
+                onkeydown="handleKeyPress(event)"
+            ></textarea>
+            <button class="btn-send" onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Export Conversation</h2>
+                <button class="close-btn" onclick="closeModal('exportModal')">×</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-primary" onclick="exportAsText()">📄 Export as Text</button>
+                <button class="btn-primary" onclick="exportAsMarkdown()">📝 Export as Markdown</button>
+                <button class="btn-primary" onclick="exportAsJSON()">📊 Export as JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div class="modal" id="shortcutsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button class="close-btn" onclick="closeModal('shortcutsModal')">×</button>
+            </div>
+            <div style="color: var(--text-primary);">
+                <p><strong>Enter</strong> - Send message</p>
+                <p><strong>Shift+Enter</strong> - New line</p>
+                <p><strong>Ctrl+K</strong> - Clear chat</p>
+                <p><strong>Ctrl+L</strong> - Load models</p>
+                <p><strong>Ctrl+E</strong> - Export conversation</p>
+                <p><strong>Ctrl+D</strong> - Toggle dark mode</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configure marked for markdown rendering
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        let conversationHistory = [];
+        let isProcessing = false;
+        let currentOllamaUrl = '';
+        let currentModel = '';
+        let currentMode = 'local';
+        let currentApiKey = '';
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            const savedMode = localStorage.getItem('mode');
+            if (savedMode) {
+                switchMode(savedMode);
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));
+            localStorage.setItem('mode', currentMode);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            saveSettings();
+            showToast(`${newTheme === 'dark' ? '🌙' : '☀️'} ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)} mode activated`);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function showShortcuts() {
+            document.getElementById('shortcutsModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function updateStatus(connected, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                statusText.textContent = text || 'Connected';
+            } else {
+                dot.classList.remove('connected');
+                statusText.textContent = text || 'Disconnected';
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const localBtn = document.getElementById('localModeBtn');
+            const cloudBtn = document.getElementById('cloudModeBtn');
+            const apiKeyGroup = document.getElementById('apiKeyGroup');
+            const ollamaUrlInput = document.getElementById('ollamaUrl');
+            const apiKeyInput = document.getElementById('apiKey');
+
+            if (mode === 'local') {
+                localBtn.classList.add('active');
+                cloudBtn.classList.remove('active');
+                apiKeyGroup.style.display = 'none';
+                ollamaUrlInput.value = 'http://localhost:11434';
+                ollamaUrlInput.placeholder = 'http://localhost:11434';
+            } else {
+                cloudBtn.classList.add('active');
+                localBtn.classList.remove('active');
+                apiKeyGroup.style.display = 'block';
+                ollamaUrlInput.value = 'https://ollama.com';
+                ollamaUrlInput.placeholder = 'https://ollama.com';
+                if (!apiKeyInput.value) {
+                    apiKeyInput.value = 'b9e0d00cbcbb47adb23ae389076c7d2e.met23afbTcatGW29LdbgXSqV';
+                }
+            }
+
+            document.getElementById('modelSelect').innerHTML = '<option value="">Select a model...</option>';
+            updateStatus(false);
+            saveSettings();
+        }
+
+        async function loadModels() {
+            const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const modelSelect = document.getElementById('modelSelect');
+            
+            if (!ollamaUrl) {
+                showToast('⚠️ Please enter an Ollama URL');
+                return;
+            }
+
+            if (currentMode === 'cloud' && !apiKey) {
+                showToast('⚠️ Please enter an API key for cloud service');
+                return;
+            }
+
+            try {
+                const requestBody = { ollama_url: ollamaUrl };
+                if (currentMode === 'cloud' && apiKey) {
+                    requestBody.api_key = apiKey;
+                    currentApiKey = apiKey;
+                }
+
+                const response = await fetch('/api/models', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    modelSelect.innerHTML = '<option value="">Select a model...</option>';
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelect.appendChild(option);
+                    });
+
+                    if (data.models.length === 0) {
+                        showToast('⚠️ No models found on this Ollama instance');
+                    } else {
+                        currentOllamaUrl = ollamaUrl;
+                        updateStatus(true, `${data.models.length} models available`);
+                        showToast(`✅ Loaded ${data.models.length} model(s)`);
+                    }
+                } else {
+                    showToast('❌ Error: ' + data.error);
+                    updateStatus(false);
+                }
+            } catch (error) {
+                showToast('❌ Failed to load models: ' + error.message);
+                updateStatus(false);
+            }
+        }
+
+        // Model selection change handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('modelSelect').addEventListener('change', function(e) {
+                const modelName = e.target.value;
+                const modelInfo = document.getElementById('modelInfo');
+                const currentModelName = document.getElementById('currentModelName');
+                
+                if (modelName) {
+                    currentModelName.textContent = modelName;
+                    modelInfo.style.display = 'inline-flex';
+                } else {
+                    modelInfo.style.display = 'none';
+                }
+            });
+
+            loadSettings();
+        });
+
+        function clearChat() {
+            conversationHistory = [];
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = '<div class="status-message">💬 Chat cleared. Start a new conversation!</div>';
+            showToast('🗑️ Chat cleared');
+        }
+
+        function handleKeyPress(event) {
+            // Ctrl+K - Clear chat
+            if (event.ctrlKey && event.key === 'k') {
+                event.preventDefault();
+                clearChat();
+            }
+            // Ctrl+L - Load models
+            if (event.ctrlKey && event.key === 'l') {
+                event.preventDefault();
+                loadModels();
+            }
+            // Ctrl+E - Export
+            if (event.ctrlKey && event.key === 'e') {
+                event.preventDefault();
+                showExportModal();
+            }
+            // Ctrl+D - Toggle dark mode
+            if (event.ctrlKey && event.key === 'd') {
+                event.preventDefault();
+                toggleTheme();
+            }
+            // Enter - Send message
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            if (isProcessing) return;
+
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            const modelSelect = document.getElementById('modelSelect');
+            const model = modelSelect.value;
+
+            if (!message) return;
+
+            if (!currentOllamaUrl) {
+                showToast('⚠️ Please load models first');
+                return;
+            }
+
+            if (!model) {
+                showToast('⚠️ Please select a model');
+                return;
+            }
+
+            currentModel = model;
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            messageInput.value = '';
+
+            conversationHistory.push({
+                role: 'user',
+                content: message
+            });
+
+            displayMessage('user', message);
+
+            const typingDiv = showTypingIndicator();
+
+            try {
+                const requestBody = {
+                    ollama_url: currentOllamaUrl,
+                    model: currentModel,
+                    messages: conversationHistory
+                };
+
+                if (currentMode === 'cloud' && currentApiKey) {
+                    requestBody.api_key = currentApiKey;
+                }
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                typingDiv.remove();
+
+                const assistantMessageDiv = createMessageDiv('assistant');
+                let fullResponse = '';
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.substring(6);
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                
+                                if (data.error) {
+                                    throw new Error(data.error);
+                                }
+
+                                if (data.message && data.message.content) {
+                                    fullResponse += data.message.content;
+                                    updateMessageContent(assistantMessageDiv, fullResponse);
+                                }
+                            } catch (e) {
+                                if (e.message.includes('Ollama') || e.message.includes('request')) {
+                                    throw e;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: fullResponse
+                });
+
+            } catch (error) {
+                typingDiv.remove();
+                displayError('Failed to get response: ' + error.message);
+                showToast('❌ Error: ' + error.message);
+            } finally {
+                isProcessing = false;
+                document.getElementById('sendBtn').disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function displayMessage(role, content) {
+            const chatContainer = document.getElementById('chatContainer');
+            
+            const statusMsg = chatContainer.querySelector('.status-message');
+            if (statusMsg) {
+                statusMsg.remove();
+            }
+
+            const messageDiv = createMessageDiv(role);
+            updateMessageContent(messageDiv, content);
+        }
+
+        function createMessageDiv(role) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'message-actions';
+            actionsDiv.innerHTML = '<button class="copy-btn" onclick="copyMessage(this)">📋 Copy</button>';
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(actionsDiv);
+            chatContainer.appendChild(messageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function updateMessageContent(messageDiv, content) {
+            const contentDiv = messageDiv.querySelector('.message-content');
+            
+            // Render markdown for assistant messages
+            if (messageDiv.classList.contains('assistant')) {
+                contentDiv.innerHTML = marked.parse(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function copyMessage(button) {
+            const messageContent = button.closest('.message').querySelector('.message-content').textContent;
+            navigator.clipboard.writeText(messageContent).then(() => {
+                button.textContent = '✅ Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = '📋 Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '🤖';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            
+            contentDiv.appendChild(typingIndicator);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function displayError(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            chatContainer.appendChild(errorDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function exportAsText() {
+            const text = conversationHistory.map(msg => 
+                `${msg.role.toUpperCase()}:\n${msg.content}\n\n`
+            ).join('---\n\n');
+            
+            downloadFile('conversation.txt', text);
+            closeModal('exportModal');
+            showToast('💾 Exported as text');
+        }
+
+        function exportAsMarkdown() {
+            const markdown = conversationHistory.map(msg => 
+                `## ${msg.role === 'user' ? '👤 User' : '🤖 Assistant'}\n\n${msg.content}\n\n`
+            ).join('---\n\n');
+            
+            downloadFile('conversation.md', markdown);
+            closeModal('exportModal');
+            showToast('💾 Exported as markdown');
+        }
+
+        function exportAsJSON() {
+            const json = JSON.stringify({
+                model: currentModel,
+                timestamp: new Date().toISOString(),
+                conversation: conversationHistory
+            }, null, 2);
+            
+            downloadFile('conversation.json', json);
+            closeModal('exportModal');
+            showToast('💾 Exported as JSON');
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
+
