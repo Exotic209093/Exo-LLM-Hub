@@ -1,5 +1,7 @@
 # Quick Start Guide
 
+## ✨ NEW: Enhanced UI with Dark Mode, Markdown & More!
+
 ## 🚀 Getting Started in 3 Steps
 
 ### Step 1: Install Dependencies
@@ -19,7 +21,16 @@ chmod +x start.sh && ./start.sh
 ```
 
 ### Step 3: Open Browser
-Navigate to: **http://localhost:5000**
+Navigate to: **http://localhost:5000** (Enhanced UI - Recommended!)
+
+Or: **http://localhost:5000/classic** (Classic UI)
+
+### 🎉 New Features You'll Love
+- 🌓 Dark mode toggle
+- 📝 Markdown rendering with code highlighting  
+- 📋 One-click message copying
+- 💾 Export conversations (Text/MD/JSON)
+- ⌨️ Keyboard shortcuts (`Ctrl+K`, `Ctrl+D`, etc.)
 
 ---
 
