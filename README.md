@@ -25,9 +25,24 @@ A beautiful and modern web application for chatting with Ollama AI models. This 
 - 💡 **LocalStorage** - Saves your theme and mode preferences
 - 📱 **Fully Responsive** - Perfect on desktop, tablet, and mobile
 
+### 🚀 Advanced Features (v2.0) ✨ JUST ADDED!
+- 💬 **Conversation Management** - Save, load, and organize multiple conversations
+- ⏹️ **Stop Generation** - Cancel AI responses mid-stream
+- 🎯 **System Prompts** - 5 pre-made templates + custom prompts (Coding, Writing, Learning, Business, Creative)
+- ✏️ **Message Editing** - Edit your messages in-place and branch conversations
+- 💾 **Auto-Save Draft** - Never lose your work with automatic draft saving
+- 🎯 **Token Counter** - Track token usage per message and total
+- ⚡ **Quick Actions** - 4 contextual actions on every AI message (Explain, Simplify, Example, Alternatives)
+- ✍️ **Typing Indicators** - Real-time typing feedback with character count
+- ⚙️ **Settings Panel** - Centralized configuration with statistics and data management
+
 ## 📚 Documentation
 
 **New here?** Start with [START_HERE.md](START_HERE.md)!
+
+**Testing the new features?** See [TESTING_GUIDE.md](TESTING_GUIDE.md)
+
+**Feature documentation:** [FEATURES_IMPLEMENTED.md](FEATURES_IMPLEMENTED.md)
 
 Complete documentation index: [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 
@@ -206,6 +221,9 @@ This test script will:
 ├── START_HERE.md              # Quick start guide
 ├── QUICK_START.md             # Quick reference
 ├── USAGE_GUIDE.md             # Detailed usage instructions
+├── TESTING_GUIDE.md           # How to test all features ✨ NEW!
+├── FEATURES_IMPLEMENTED.md    # All 9 features documented ✨ NEW!
+├── FEATURE_SUGGESTIONS.md     # Future enhancement ideas ✨
 ├── WHATS_NEW.md               # What's new in v2.0 ✨
 ├── ENHANCEMENT_SUMMARY.md     # Enhancement overview ✨
 ├── ENHANCEMENT_FEATURES.md    # Feature details ✨
